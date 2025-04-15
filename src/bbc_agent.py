@@ -32,20 +32,6 @@ class BBCAgent:
             contents.append(soup.get_text())
         return contents
 
-    def analyze_contents(self, contents):
-        analyses = []
-        for content in contents:
-            response = openai.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant analyzing BBC news content."},
-                    {"role": "user", "content": f"Analyze this BBC content concisely. Summarize the main points in 3-5 short bullet points, using as few words as possible, and do not exceed the response length limit:\n\n{content[:4000]}"}
-                ],
-                max_tokens=150
-            )
-            result = response.choices[0].message.content.strip()
-            analyses.append(result)
-        return analyses
 
     def compare_analyses(self, analyses):
         return {"analyses": analyses}
@@ -68,22 +54,43 @@ class BBCAgent:
         )
         return response.choices[0].message.content.strip()
 
+    def analyze_contents(self, contents):
+        analyses = []
+        for content in contents:
+            try:
+                response = openai.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant analyzing BBC news content."},
+                        {"role": "user", "content": f"Analyze this BBC content concisely. Summarize the main points in 3-5 short bullet points, using as few words as possible, and do not exceed the response length limit:\n\n{content[:4000]}"}
+                    ],
+                    max_tokens=150
+                )
+                result = response.choices[0].message.content.strip()
+            except Exception as e:
+                result = f"Error analyzing content: {e}"
+            analyses.append(result)
+        return analyses
+
     def get_trends_summary(self, analyses):
         combined = "\n\n".join(analyses)
-        response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that summarizes trends across multiple news article analyses."},
-                {"role": "user", "content": (
-                    "Given the following analyses of BBC articles, provide a detailed overview of the main trends or common themes in 5-8 explicit bullet points. "
-                    "For each trend, explain what it could mean for the future, especially considering potential changes in the market, public opinion, or policy. "
-                    "Be thorough, insightful, and do not exceed the response length limit:\n\n"
-                    f"{combined}"
-                )}
-            ],
-            max_tokens=400
-        )
-        return response.choices[0].message.content.strip()
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that summarizes trends across multiple news article analyses."},
+                    {"role": "user", "content": (
+                        "Given the following analyses of BBC articles, provide a detailed overview of the main trends or common themes in 5-8 explicit bullet points. "
+                        "For each trend, explain what it could mean for the future, especially considering potential changes in the market, public opinion, or policy. "
+                        "Be thorough, insightful, and do not exceed the response length limit:\n\n"
+                        f"{combined}"
+                    )}
+                ],
+                max_tokens=400
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            return f"Error summarizing trends: {e}"
 
 def get_top_bbc_articles(n=10):
     url = "https://www.bbc.com"

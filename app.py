@@ -106,6 +106,7 @@ def convert_lists_to_html(text):
 def index():
     result = None
     urls = []
+    error = None
     if request.method == 'POST':
         urls = request.form.get('urls', '').split(',')
     else:
@@ -113,14 +114,20 @@ def index():
         urls = get_top_bbc_articles(10)
     api_key = os.getenv('OPENAI_API_KEY')
     agent = BBCAgent(api_key)
-    contents = agent.get_bbc_contents(urls)
-    analyses = agent.analyze_contents(contents)
-    analyses = [convert_dashes_to_ul(a) for a in analyses]
-    result = agent.compare_analyses(analyses)
-    zipped = zip(urls, result["analyses"]) if result and "analyses" in result else []
-    trends = agent.get_trends_summary(analyses)
-    trends = convert_lists_to_html(trends)
-    return render_template('index.html', result=result, urls=urls, zipped=zipped, trends=trends)
+    try:
+        contents = agent.get_bbc_contents(urls)
+        analyses = agent.analyze_contents(contents)
+        # Use only convert_lists_to_html for all analyses
+        analyses = [convert_lists_to_html(a) for a in analyses]
+        result = agent.compare_analyses(analyses)
+        zipped = zip(urls, result["analyses"]) if result and "analyses" in result else []
+        trends = agent.get_trends_summary(analyses)
+        trends = convert_lists_to_html(trends)
+    except Exception as e:
+        error = f"An error occurred: {e}"
+        zipped = []
+        trends = ""
+    return render_template('index.html', result=result, urls=urls, zipped=zipped, trends=trends, error=error)
 
-if __name__ == '__main__':
-    app.run(debug=True) 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000))) 

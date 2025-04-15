@@ -5,6 +5,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+{% if error %}
+    <div style="color: red; font-weight: bold;">{{ error }}</div>
+{% endif %}
 <div class="container">
     <h1>BBC Content Analyzer</h1>
     <form method="post">
