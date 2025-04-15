@@ -1,0 +1,122 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f7fa;
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 40px 40px 40px;
+}
+
+h1 {
+    color: #00539f;
+    margin-bottom: 16px;
+    font-size: 2.2em;
+}
+
+form {
+    margin-bottom: 24px;
+}
+
+label {
+    font-weight: bold;
+    color: #333;
+}
+
+input[type="text"] {
+    width: 90%;
+    padding: 8px;
+    margin-top: 8px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+input[type="submit"] {
+    background: #00539f;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.2s;
+}
+
+input[type="submit"]:hover {
+    background: #003e7e;
+}
+
+h2 {
+    color: #00539f;
+    margin-top: 32px;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+ul li {
+    margin-bottom: 6px;
+    font-size: 1.05em;
+}
+
+ul li a {
+    color: #00539f;
+    text-decoration: none;
+}
+
+ul li a:hover {
+    text-decoration: underline;
+}
+
+pre {
+    background: #f0f4f8;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 1em;
+    overflow-x: auto;
+    margin-top: 12px;
+    color: #222;
+    border: 1px solid #e0e0e0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: #fff;
+}
+
+th, td {
+    border: 1px solid #e0e0e0;
+    padding: 12px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #f0f4f8;
+    color: #00539f;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background: #f7f7fa;
+}
+
+ol, ul {
+    margin: 0 0 0 1.5em;
+    padding-left: 1.2em;
+}
+ol li, ul li {
+    margin-bottom: 0.5em;
+}

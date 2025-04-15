@@ -1,0 +1,7 @@
+{
+    "api_key": "your_openai_api_key",
+    "urls": [
+        "https://www.bbc.com/news",
+        "https://www.bbc.com/sport"
+    ]
+} 
