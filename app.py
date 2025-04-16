@@ -60,16 +60,22 @@ def convert_lists_to_html(text):
     """
     Converts numbered and dash lists in text to HTML lists for better readability.
     """
+    if not text:
+        return text
+
     lines = text.split('\n')
     new_lines = []
     in_ol = False
     in_ul = False
     ol_items = []
     ul_items = []
+    ol_counter = 1  # Keep track of numbering
 
     for line in lines:
-        ol_match = re.match(r'^\s*\d+\.\s+(.*)', line)
+        # Look for numbered items (now supporting both "1." and "1)")
+        ol_match = re.match(r'^\s*\d+[\.\)]\s+(.*)', line)
         ul_match = re.match(r'^\s*-\s+(.*)', line)
+        
         if ol_match:
             if in_ul:
                 new_lines.append('<ul>' + ''.join(f'<li>{item}</li>' for item in ul_items) + '</ul>')
@@ -94,7 +100,8 @@ def convert_lists_to_html(text):
                 ul_items = []
                 in_ul = False
             new_lines.append(line)
-    # Close any open lists at the end
+
+    # Close any open lists
     if in_ol:
         new_lines.append('<ol>' + ''.join(f'<li>{item}</li>' for item in ol_items) + '</ol>')
     if in_ul:
