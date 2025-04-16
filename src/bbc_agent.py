@@ -80,21 +80,24 @@ class BBCAgent:
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that summarizes trends across multiple news article analyses."},
                     {"role": "user", "content": (
-                        "Given the following analyses of BBC articles, provide a detailed overview of 3-5 main trends. "
-                        "For each trend:\n"
-                        "1. Start with a clear title in quotes\n"
-                        "2. Explain the current situation\n"
-                        "3. Describe future implications\n"
-                        "Format as complete, numbered points. Ensure each point is complete and not cut off.\n\n"
+                        "Given the following analyses of BBC articles, provide 3-5 main trends. For each trend:\n"
+                        "1. Start with a numbered trend title in quotes\n"
+                        "2. On the next line, describe the current situation (without numbering)\n"
+                        "3. On the next line, describe future implications (without numbering)\n"
+                        "4. Add '---' on a new line between trends\n\n"
+                        "Example format:\n"
+                        '1. "Title of First Trend"\n'
+                        "Current situation description.\n"
+                        "Future implications and analysis.\n"
+                        "---\n"
                         f"{combined}"
                     )}
                 ],
                 max_tokens=400
             )
             trends = response.choices[0].message.content.strip()
-            # Only return if the last trend appears complete (ends with a period)
             if not trends.endswith('.'):
-                trends = trends.rsplit('\n', 1)[0]  # Remove last incomplete trend
+                trends = trends.rsplit('\n', 1)[0]
             return trends
         except Exception as e:
             return f"Error summarizing trends: {e}"

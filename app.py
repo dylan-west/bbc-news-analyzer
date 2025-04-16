@@ -58,54 +58,31 @@ def convert_dashes_to_ul(text):
 
 def convert_lists_to_html(text):
     """
-    Converts numbered and dash lists in text to HTML lists for better readability.
+    Converts trend summaries to properly formatted HTML.
     """
     if not text:
         return text
 
     lines = text.split('\n')
     new_lines = []
-    in_ol = False
-    in_ul = False
-    ol_items = []
-    ul_items = []
-    ol_counter = 1  # Keep track of numbering
+    current_trend = None
 
     for line in lines:
-        # Look for numbered items (now supporting both "1." and "1)")
-        ol_match = re.match(r'^\s*\d+[\.\)]\s+(.*)', line)
-        ul_match = re.match(r'^\s*-\s+(.*)', line)
+        # Match trend titles (numbered with quotes)
+        title_match = re.match(r'^\s*(\d+)\.\s*"([^"]+)"', line)
         
-        if ol_match:
-            if in_ul:
-                new_lines.append('<ul>' + ''.join(f'<li>{item}</li>' for item in ul_items) + '</ul>')
-                ul_items = []
-                in_ul = False
-            ol_items.append(ol_match.group(1))
-            in_ol = True
-        elif ul_match:
-            if in_ol:
-                new_lines.append('<ol>' + ''.join(f'<li>{item}</li>' for item in ol_items) + '</ol>')
-                ol_items = []
-                in_ol = False
-            ul_items.append(ul_match.group(1))
-            in_ul = True
+        if title_match:
+            # Start new trend with proper numbering
+            number = title_match.group(1)
+            title = title_match.group(2)
+            new_lines.append(f'<h3>{number}. "{title}"</h3>')
+        elif line.strip() == '---':
+            # Add spacing between trends
+            new_lines.append('<hr>')
         else:
-            if in_ol:
-                new_lines.append('<ol>' + ''.join(f'<li>{item}</li>' for item in ol_items) + '</ol>')
-                ol_items = []
-                in_ol = False
-            if in_ul:
-                new_lines.append('<ul>' + ''.join(f'<li>{item}</li>' for item in ul_items) + '</ul>')
-                ul_items = []
-                in_ul = False
-            new_lines.append(line)
-
-    # Close any open lists
-    if in_ol:
-        new_lines.append('<ol>' + ''.join(f'<li>{item}</li>' for item in ol_items) + '</ol>')
-    if in_ul:
-        new_lines.append('<ul>' + ''.join(f'<li>{item}</li>' for item in ul_items) + '</ul>')
+            # Regular content lines
+            if line.strip():
+                new_lines.append(f'<p>{line}</p>')
 
     return Markup('\n'.join(new_lines))
 
