@@ -55,4 +55,3 @@ Visit the live application at: [BBC News Analyzer](https://bbc-news-analyzer.onr
 
 6. Visit `http://localhost:10000` in your browser
 
-## Project Structure
