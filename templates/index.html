@@ -53,6 +53,11 @@
             </tr>
         </table>
     {% endif %}
+    {% if cache_time %}
+    <div style="text-align: center; color: #666; margin: 20px 0;">
+        Last updated: {{ cache_time }}
+    </div>
+    {% endif %}
 </div>
 </body>
 </html>

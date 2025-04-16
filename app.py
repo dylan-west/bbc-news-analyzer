@@ -2,13 +2,22 @@ from dotenv import load_dotenv
 import os
 import re
 from markupsafe import Markup
+from flask_caching import Cache
+from datetime import datetime, timedelta
 
 load_dotenv()  # Load environment variables from .env
 
 from flask import Flask, request, render_template, jsonify
 from src.bbc_agent import BBCAgent, get_top_bbc_articles
 
+# Configure Flask-Caching
+cache = Cache(config={
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 3600  # Cache for 1 hour
+})
+
 app = Flask(__name__)
+cache.init_app(app)
 
 def convert_numbered_list(text):
     """
@@ -87,31 +96,57 @@ def convert_lists_to_html(text):
     return Markup('\n'.join(new_lines))
 
 @app.route('/', methods=['GET', 'POST'])
+@cache.cached(timeout=3600, unless=lambda: request.method == 'POST')  # Cache GET requests for 1 hour
 def index():
     result = None
     urls = []
     error = None
+    
     if request.method == 'POST':
+        # Handle POST requests (manual URL submission) without caching
         urls = request.form.get('urls', '').split(',')
     else:
-        # On GET, fetch top 10 BBC articles
+        # For GET requests, use cached data
+        cached_data = cache.get('bbc_analysis')
+        if cached_data:
+            return render_template('index.html', **cached_data)
+        
+        # If no cached data, fetch new data
         urls = get_top_bbc_articles(10)
-    api_key = os.getenv('OPENAI_API_KEY')
-    agent = BBCAgent(api_key)
+
     try:
+        api_key = os.getenv('OPENAI_API_KEY')
+        agent = BBCAgent(api_key)
         contents = agent.get_bbc_contents(urls)
         analyses = agent.analyze_contents(contents)
-        # Use only convert_lists_to_html for all analyses
         analyses = [convert_lists_to_html(a) for a in analyses]
         result = agent.compare_analyses(analyses)
         zipped = zip(urls, result["analyses"]) if result and "analyses" in result else []
         trends = agent.get_trends_summary(analyses)
         trends = convert_lists_to_html(trends)
+        
+        # Cache the results for GET requests
+        if request.method == 'GET':
+            cache_data = {
+                'result': result,
+                'urls': urls,
+                'zipped': list(zipped),  # Convert zip object to list for caching
+                'trends': trends,
+                'error': error,
+                'cache_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            cache.set('bbc_analysis', cache_data)
+            
+        return render_template('index.html', 
+                             result=result, 
+                             urls=urls, 
+                             zipped=zipped, 
+                             trends=trends, 
+                             error=error,
+                             cache_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     except Exception as e:
         error = f"An error occurred: {e}"
-        zipped = []
-        trends = ""
-    return render_template('index.html', result=result, urls=urls, zipped=zipped, trends=trends, error=error)
+        return render_template('index.html', error=error)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000))) 
