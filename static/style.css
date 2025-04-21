@@ -151,3 +151,14 @@ ol li, ul li {
 .results-table a:hover {
     text-decoration: underline;
 }
+
+.trends-section {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.trend-content {
+    margin-top: 20px;
+}

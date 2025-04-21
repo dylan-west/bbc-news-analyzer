@@ -114,16 +114,17 @@ def index():
         analyses = agent.analyze_contents(contents)
         analyses = [convert_lists_to_html(a) for a in analyses]
         
-        # Make sure we're creating a list from zip() for caching
-        zipped_data = list(zip(urls, analyses))
+        # Create article analysis pairs
+        articles_analysis = list(zip(urls, analyses))
         
+        # Get trends
         trends = agent.get_trends_summary(analyses)
         trends = convert_lists_to_html(trends)
         
         if request.method == 'GET':
             cache_data = {
                 'urls': urls,
-                'zipped': zipped_data,
+                'articles_analysis': articles_analysis,
                 'trends': trends,
                 'error': error,
                 'cache_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -132,7 +133,7 @@ def index():
         
         return render_template('index.html', 
                              urls=urls,
-                             zipped=zipped_data,
+                             articles_analysis=articles_analysis,
                              trends=trends,
                              error=error,
                              cache_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
