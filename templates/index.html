@@ -22,7 +22,7 @@
         {% endfor %}
     </ul>
     {% if result and result.analyses %}
-        <h1>Results:</h1>
+        <h1>Article Analysis</h1>
         <table class="results-table">
             <thead>
                 <tr>
@@ -31,7 +31,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for url, analysis in articles_analysis %}
+                {% for url, analysis in articles_with_analyses %}
                 <tr>
                     <td><a href="{{ url }}" target="_blank">{{ url }}</a></td>
                     <td>{{ analysis|safe }}</td>
@@ -43,10 +43,7 @@
     {% if trends %}
         <h2>Trends Across Articles</h2>
         <div class="trends-section">
-            <h3>Trend Summary</h3>
-            <div class="trend-content">
-                {{ trends|safe }}
-            </div>
+            {{ trends|safe }}
         </div>
     {% endif %}
     {% if cache_time %}

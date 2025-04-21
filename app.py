@@ -114,29 +114,26 @@ def index():
         analyses = agent.analyze_contents(contents)
         analyses = [convert_lists_to_html(a) for a in analyses]
         
-        # Create article analysis pairs
-        articles_analysis = list(zip(urls, analyses))
+        # This is what we were missing - properly zip urls with their analyses
+        articles_with_analyses = list(zip(urls, analyses))
         
-        # Get trends
         trends = agent.get_trends_summary(analyses)
         trends = convert_lists_to_html(trends)
         
         if request.method == 'GET':
             cache_data = {
                 'urls': urls,
-                'articles_analysis': articles_analysis,
+                'articles_with_analyses': articles_with_analyses,  # Cache this
                 'trends': trends,
-                'error': error,
                 'cache_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             cache.set('bbc_analysis', cache_data)
         
         return render_template('index.html', 
-                             urls=urls,
-                             articles_analysis=articles_analysis,
+                             articles_with_analyses=articles_with_analyses,  # Pass to template
                              trends=trends,
-                             error=error,
                              cache_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                             
     except Exception as e:
         error = f"An error occurred: {e}"
         return render_template('index.html', error=error)
