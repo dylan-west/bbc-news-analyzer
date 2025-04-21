@@ -110,27 +110,29 @@ def index():
     try:
         api_key = os.getenv('OPENAI_API_KEY')
         agent = BBCAgent(api_key)
+        
+        # Get and analyze individual articles
         contents = agent.get_bbc_contents(urls)
-        analyses = agent.analyze_contents(contents)
-        analyses = [convert_lists_to_html(a) for a in analyses]
+        individual_analyses = agent.analyze_contents(contents)
+        individual_analyses = [convert_lists_to_html(a) for a in individual_analyses]
         
-        # This is what we were missing - properly zip urls with their analyses
-        articles_with_analyses = list(zip(urls, analyses))
+        # Create pairs of URLs and their analyses
+        article_analyses = list(zip(urls, individual_analyses))
         
-        trends = agent.get_trends_summary(analyses)
+        # Get trends analysis
+        trends = agent.get_trends_summary(individual_analyses)
         trends = convert_lists_to_html(trends)
         
         if request.method == 'GET':
             cache_data = {
-                'urls': urls,
-                'articles_with_analyses': articles_with_analyses,  # Cache this
+                'article_analyses': article_analyses,
                 'trends': trends,
                 'cache_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             cache.set('bbc_analysis', cache_data)
         
         return render_template('index.html', 
-                             articles_with_analyses=articles_with_analyses,  # Pass to template
+                             article_analyses=article_analyses,  # Pass individual analyses
                              trends=trends,
                              cache_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                              
