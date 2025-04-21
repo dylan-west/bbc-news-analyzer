@@ -96,22 +96,15 @@ def convert_lists_to_html(text):
     return Markup('\n'.join(new_lines))
 
 @app.route('/', methods=['GET', 'POST'])
-@cache.cached(timeout=3600, unless=lambda: request.method == 'POST')  # Cache GET requests for 1 hour
+@cache.cached(timeout=3600, unless=lambda: request.method == 'POST')
 def index():
     result = None
     urls = []
     error = None
     
     if request.method == 'POST':
-        # Handle POST requests (manual URL submission) without caching
         urls = request.form.get('urls', '').split(',')
     else:
-        # For GET requests, use cached data
-        cached_data = cache.get('bbc_analysis')
-        if cached_data:
-            return render_template('index.html', **cached_data)
-        
-        # If no cached data, fetch new data
         urls = get_top_bbc_articles(10)
 
     try:
@@ -120,28 +113,27 @@ def index():
         contents = agent.get_bbc_contents(urls)
         analyses = agent.analyze_contents(contents)
         analyses = [convert_lists_to_html(a) for a in analyses]
-        result = agent.compare_analyses(analyses)
-        zipped = zip(urls, result["analyses"]) if result and "analyses" in result else []
+        
+        # Make sure we're creating a list from zip() for caching
+        zipped_data = list(zip(urls, analyses))
+        
         trends = agent.get_trends_summary(analyses)
         trends = convert_lists_to_html(trends)
         
-        # Cache the results for GET requests
         if request.method == 'GET':
             cache_data = {
-                'result': result,
                 'urls': urls,
-                'zipped': list(zipped),  # Convert zip object to list for caching
+                'zipped': zipped_data,
                 'trends': trends,
                 'error': error,
                 'cache_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             cache.set('bbc_analysis', cache_data)
-            
+        
         return render_template('index.html', 
-                             result=result, 
-                             urls=urls, 
-                             zipped=zipped, 
-                             trends=trends, 
+                             urls=urls,
+                             zipped=zipped_data,
+                             trends=trends,
                              error=error,
                              cache_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     except Exception as e:
